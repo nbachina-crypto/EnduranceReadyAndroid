@@ -26,6 +26,8 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -40,12 +42,17 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.narenbachina.enduranceready.R
+import com.narenbachina.enduranceready.data.FakeHealthRepository
 import com.narenbachina.enduranceready.navigation.NavigationDestination
 import com.narenbachina.enduranceready.navigation.TopNavigationBar
+import com.narenbachina.enduranceready.viewmodels.ReadinessViewModel
 
 //Main Composable for Readiness Score Screen
 @Composable
-fun ReadinessScoreScreen(navController: NavController){
+fun ReadinessScoreScreen(navController: NavController,
+                         viewModel: ReadinessViewModel
+){
+val readinessUiState by viewModel.uiState.collectAsState()
 
     LazyColumn(
         modifier = Modifier.fillMaxSize()
@@ -57,7 +64,16 @@ fun ReadinessScoreScreen(navController: NavController){
 
         }
         item {
-            ScoreSection(readinessScore = "90", readinessScoreCategory = "High")
+            if(readinessUiState.isLoading){
+                Text(text = "Loading...")
+            }else if(readinessUiState.error!=null) {
+                Text(text = "Error: ${readinessUiState.error}")
+            }
+            else{
+                ScoreSection(readinessScore = readinessUiState.sleepHours?.toString()?:"--",
+                    readinessScoreCategory = if(readinessUiState.restingHeartRate!=null)"Loaded" else "Loading"
+                )
+            }
 
         }
         item {
@@ -133,7 +149,8 @@ fun DaySelectorSection(currentDayLabel: String,onPreviousClick:()->Unit,onNextCl
 
 //Score section composable
 @Composable
-fun ScoreSection(readinessScore: String,readinessScoreCategory: String){
+fun ScoreSection(readinessScore: String, readinessScoreCategory: String){
+
     Card(
         modifier = Modifier.fillMaxWidth().wrapContentHeight()
             .padding(4.dp)

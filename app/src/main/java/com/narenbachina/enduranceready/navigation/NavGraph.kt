@@ -2,20 +2,22 @@ package com.narenbachina.enduranceready.navigation
 
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.Composable
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraph
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.narenbachina.enduranceready.data.AppContainer
+import com.narenbachina.enduranceready.data.FakeHealthRepository
 import com.narenbachina.enduranceready.screens.FoodDetailsScreen
 import com.narenbachina.enduranceready.screens.HomeScreen
 import com.narenbachina.enduranceready.screens.ProfileScreen
 import com.narenbachina.enduranceready.screens.ReadinessScoreScreen
 import com.narenbachina.enduranceready.screens.SleepDetailsScreen
 import com.narenbachina.enduranceready.screens.WorkoutMovementDetailsScreen
-
-
-
+import com.narenbachina.enduranceready.viewmodels.ReadinessViewModel
+import com.narenbachina.enduranceready.viewmodels.ReadinessViewModelFactory
 
 
 /*
@@ -25,7 +27,8 @@ is a subclass of 'NavController' that is specifically used in Jetpack Compose
 for integrating with a *NavHost* composable.
  */
 @Composable
-fun NavGraph(navController: NavHostController
+fun NavGraph(navController: NavHostController,
+             container: AppContainer
 
 ){
     NavHost(navController = navController,
@@ -46,9 +49,20 @@ fun NavGraph(navController: NavHostController
         composable(NavigationDestination.Profile.route){
             ProfileScreen()
         }
-
+        /**
+         * ViewModel is created here using Factory because it requires HealthRepository as a dependency.
+         *
+         * We inject container.healthRepository
+         * instead of creating FakeHealthRepository directly.
+         *
+         * This keeps architecture clean and scalable.
+         */
         composable(NavigationDestination.ReadinessScoreDetails.route){
-            ReadinessScoreScreen(navController)
+            val viewModel: ReadinessViewModel = viewModel(factory = ReadinessViewModelFactory(
+                container.healthRepository
+            )
+            )
+            ReadinessScoreScreen(navController,viewModel)
         }
 
 

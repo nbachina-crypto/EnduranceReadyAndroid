@@ -182,4 +182,5 @@ fun StatsCard(title:String,value:String,unit:String,icon:Int,onStatCardClick:()-
 @Preview(showBackground = true)
 @Composable
 fun HomeScreenPreview(){
+    HomeScreen(navController = rememberNavController())
 }

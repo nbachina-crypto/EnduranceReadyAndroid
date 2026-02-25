@@ -7,10 +7,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.narenbachina.enduranceready.data.AppContainer
 import com.narenbachina.enduranceready.navigation.BottomNavigationBar
 import com.narenbachina.enduranceready.navigation.NavGraph
 import com.narenbachina.enduranceready.navigation.NavigationDestination
@@ -48,8 +50,10 @@ fun EnduranceReadyApp(){
         }
     ){
         innerPadding->
+
         Box(modifier = Modifier.padding(innerPadding)){
-            NavGraph(navController=navController)
+            val container=remember { AppContainer() }
+            NavGraph(navController=navController,container=container)
         }
 
 
