@@ -47,7 +47,10 @@ fun NavGraph(navController: NavHostController,
             WorkoutMovementDetailsScreen()
         }
         composable(NavigationDestination.Profile.route){
-            ProfileScreen()
+            ProfileScreen(viewModel(factory = ReadinessViewModelFactory(
+                container.healthRepository
+            )
+            ))
         }
         /**
          * ViewModel is created here using Factory because it requires HealthRepository as a dependency.

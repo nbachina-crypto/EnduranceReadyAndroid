@@ -9,6 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
@@ -52,7 +53,8 @@ fun EnduranceReadyApp(){
         innerPadding->
 
         Box(modifier = Modifier.padding(innerPadding)){
-            val container=remember { AppContainer() }
+            val context=LocalContext.current
+            val container=remember { AppContainer(context) }
             NavGraph(navController=navController,container=container)
         }
 

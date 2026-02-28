@@ -10,7 +10,7 @@ android {
 
     defaultConfig {
         applicationId = "com.narenbachina.enduranceready"
-        minSdk = 24
+        minSdk = 26
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
@@ -63,6 +63,13 @@ dependencies {
     val nav_version = "2.9.6"
 
     implementation("androidx.navigation:navigation-compose:$nav_version")
+
+    //android sdk
+    dependencies {
+
+        implementation ("androidx.health.connect:connect-client:1.2.0-alpha02")
+
+    }
 
 
 }

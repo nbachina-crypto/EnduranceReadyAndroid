@@ -7,14 +7,17 @@ import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
 import androidx.lifecycle.viewmodel.viewModelFactory
+import com.narenbachina.enduranceready.data.HealthConnectManager
 import com.narenbachina.enduranceready.data.HealthRepository
+import com.narenbachina.enduranceready.data.HealthRepositoryImplementation
 import com.narenbachina.enduranceready.model.ReadinessUiState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-class ReadinessViewModel(private val repository: HealthRepository): ViewModel() {
+class ReadinessViewModel(private val repository: HealthRepository,
+): ViewModel() {
 
     /**
      * Backing Property Pattern
@@ -59,6 +62,9 @@ class ReadinessViewModel(private val repository: HealthRepository): ViewModel() 
         viewModelScope.launch  {
 
             try {
+
+
+                val weight=repository.getLatestWeight()
                 _uiState.value=ReadinessUiState(isLoading = true)
 
                 val sleep=repository.getSleepHours()
@@ -66,7 +72,10 @@ class ReadinessViewModel(private val repository: HealthRepository): ViewModel() 
 
                 _uiState.value=ReadinessUiState(sleepHours = sleep,
                     restingHeartRate = heartRate,
-                    isLoading = false)
+                    isLoading = false,
+                    userWeight = weight
+                )
+
 
             }catch (e: Exception){
                 _uiState.value=ReadinessUiState(isLoading = false

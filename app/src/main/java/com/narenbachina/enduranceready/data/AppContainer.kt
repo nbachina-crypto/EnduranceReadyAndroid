@@ -1,5 +1,7 @@
 package com.narenbachina.enduranceready.data
 
+import android.content.Context
+
 
 /**
  * AppContainer
@@ -22,6 +24,12 @@ package com.narenbachina.enduranceready.data
  * - Cleaner architecture
  * - Better testability
  */
-class AppContainer {
-     val healthRepository: HealthRepository = FakeHealthRepository()
+class AppContainer(
+    private val applicationContext: Context
+) {
+      val healthRepository: HealthRepository by lazy {
+         HealthRepositoryImplementation(
+             HealthConnectManager(applicationContext)
+         )
+     }
 }

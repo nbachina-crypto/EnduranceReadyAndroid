@@ -12,4 +12,8 @@ class FakeHealthRepository(): HealthRepository{
         delay(1000)
         return 65
     }
+
+    override suspend fun getLatestWeight(): Double? {
+        TODO("Not yet implemented")
+    }
 }
