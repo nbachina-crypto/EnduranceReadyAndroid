@@ -27,9 +27,15 @@ import android.content.Context
 class AppContainer(
     private val applicationContext: Context
 ) {
+
+//    Lazy Ensures that the object is not created until the moment it is actually needed/used in the code
+    val healthConnectManager by lazy {
+        HealthConnectManager(applicationContext)
+    }
+
       val healthRepository: HealthRepository by lazy {
          HealthRepositoryImplementation(
-             HealthConnectManager(applicationContext)
+             healthConnectManager
          )
      }
 }

@@ -3,7 +3,6 @@ package com.narenbachina.enduranceready.screens
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -22,30 +21,32 @@ import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.narenbachina.enduranceready.R
-import com.narenbachina.enduranceready.data.FakeHealthRepository
+import com.narenbachina.enduranceready.data.HealthConnectManager
+import com.narenbachina.enduranceready.data.HealthRepositoryImplementation
 import com.narenbachina.enduranceready.navigation.NavigationDestination
-import com.narenbachina.enduranceready.navigation.TopNavigationBar
 import com.narenbachina.enduranceready.viewmodels.ReadinessViewModel
+import com.narenbachina.enduranceready.viewmodels.ReadinessViewModelFactory
 
 //Main Composable for Readiness Score Screen
 @Composable
@@ -53,6 +54,9 @@ fun ReadinessScoreScreen(navController: NavController,
                          viewModel: ReadinessViewModel
 ){
 val readinessUiState by viewModel.uiState.collectAsState()
+    val sleepValue=readinessUiState.sleepHours?.let {
+        String.format("%.1f hrs",it)
+    }?:"--"
 
     LazyColumn(
         modifier = Modifier.fillMaxSize()
@@ -77,38 +81,13 @@ val readinessUiState by viewModel.uiState.collectAsState()
 
         }
         item {
-            DetailedReportReadinesScore(onSleepCardClick = {
-                navController.navigate(NavigationDestination.SleepDetails.route){
-                    popUpTo(navController.graph.startDestinationId){
-                        saveState=true
-                    }
+            DetailedReportReadinesScore(
+                sleepValue=sleepValue,
+                nutritionValue=2000.toString(),
+                heartRateValue=2000.toString(),
+                movementValue=2000.toString(),
 
-                    launchSingleTop=true
-
-                    restoreState=true
-                }
-
-            }, onNutritionCardClick = {
-                navController.navigate(NavigationDestination.FoodDetails.route){
-                    popUpTo(navController.graph.startDestinationId){
-                        saveState=true
-                    }
-
-                    launchSingleTop=true
-
-                    restoreState=true
-                }
-            }, onMovementCardClick = {
-                navController.navigate(NavigationDestination.WorkoutDetails.route){
-                    popUpTo(navController.graph.startDestinationId){
-                        saveState=true
-                    }
-
-                    launchSingleTop=true
-
-                    restoreState=true
-                }
-            })
+            )
 
         }
         item {
@@ -183,7 +162,12 @@ fun ScoreSection(readinessScore: String, readinessScoreCategory: String){
 
 //Detail report readiness score composable
 @Composable
-fun DetailedReportReadinesScore(onSleepCardClick:()-> Unit,onNutritionCardClick:()-> Unit,onMovementCardClick:()-> Unit){
+fun DetailedReportReadinesScore(
+    sleepValue: String,
+    nutritionValue: String,
+    heartRateValue: String,
+    movementValue: String,
+){
     Card(
         modifier = Modifier.fillMaxWidth()
             .wrapContentHeight()
@@ -200,85 +184,91 @@ fun DetailedReportReadinesScore(onSleepCardClick:()-> Unit,onNutritionCardClick:
             )
             Text(text = "\n"+"Fitbit looks for key indicators of recovery to give you a readiness score each day "+"\n")
 
-            ElevatedCard(modifier = Modifier.fillMaxWidth().height(75.dp),
-                elevation = CardDefaults.cardElevation(defaultElevation = 5.dp),
+            // Sleep (Top rounded)
+            ReadinessDetailCard(
+                iconRes = R.drawable.sleepicon,
+                message = "Sleep",
+                value = sleepValue,
+                contentDescription = "Sleep Parameter",
+                topStart = 16.dp,
+                topEnd = 16.dp,
 
-                shape = RoundedCornerShape(
-                    topStart = 16.dp, // Rounded corner
-                    topEnd = 16.dp,   // Rounded corner
-                    bottomStart = 0.dp, // Square corner
-                    bottomEnd = 0.dp    // Square corner
-                ),onClick = onSleepCardClick
-            ){
-                Row(
-                    modifier = Modifier.fillMaxSize().padding(3.dp),
-                    horizontalArrangement = Arrangement.Start,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        painter = painterResource(R.drawable.sleepicon),
-                        contentDescription = "Sleep Parameter",
-                        tint = MaterialTheme.colorScheme.primary,
-                    )
+            )
 
-                    Text(text = "Sleep about usual")
-                }
-            }
+            // Nutrition (Middle - sharp)
+            ReadinessDetailCard(
+                iconRes = R.drawable.foodicon,
+                message = "Nutrition",
+                value = nutritionValue,
+                contentDescription = "Nutrition Parameter",
 
-            ElevatedCard(modifier = Modifier.fillMaxWidth().height(75.dp),
-                elevation = CardDefaults.cardElevation(defaultElevation = 5.dp),
-                shape = RoundedCornerShape(
-                    topStart = 0.dp, // Rounded corner
-                    topEnd = 0.dp,   // Rounded corner
-                    bottomStart = 0.dp, // Square corner
-                    bottomEnd = 0.dp    // Square corner
-                ), onClick = onNutritionCardClick
-            ){
-                Row(
-                    modifier = Modifier.fillMaxSize().padding(3.dp),
-                    horizontalArrangement = Arrangement.Start,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        painter = painterResource(R.drawable.foodicon),
-                        contentDescription = "Food Parameter",
-                        tint = MaterialTheme.colorScheme.primary,
-                    )
+            )
 
-                    Text(text = "nutriton on point")
-                }
-            }
+            // Resting Heart Rate (Middle - sharp)
+            ReadinessDetailCard(
+                iconRes = R.drawable.rhr,
+                message = "Resting Heart Rate",
+                value = heartRateValue,
+                contentDescription = "Resting Heart Rate Parameter",
 
-            ElevatedCard(modifier = Modifier.fillMaxWidth().height(75.dp),
-                elevation = CardDefaults.cardElevation(defaultElevation = 5.dp),
+            )
 
-                shape = RoundedCornerShape(
-                    topStart = 0.dp, // Rounded corner
-                    topEnd = 0.dp,   // Rounded corner
-                    bottomStart = 16.dp, // Square corner
-                    bottomEnd = 16.dp    // Square corner
-                ), onClick = onMovementCardClick
-            ){
-                Row(
-                    modifier = Modifier.fillMaxSize().padding(3.dp),
-                    horizontalArrangement = Arrangement.Start,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        painter = painterResource(R.drawable.exerciseicon),
-                        contentDescription = "Movement Parameter",
-                        tint = MaterialTheme.colorScheme.primary,
-                    )
+            // Movement (Bottom rounded)
+            ReadinessDetailCard(
+                iconRes = R.drawable.exerciseicon,
+                message = "Movement",
+                value = movementValue,
+                contentDescription = "Movement Parameter",
+                bottomStart = 16.dp,
+                bottomEnd = 16.dp,
 
-                    Text(text = "Movement on track")
-                }
-            }
+            )
         }
 
 
     }
 }
 
+
+@Composable
+
+fun ReadinessDetailCard(
+    iconRes: Int,
+    message: String,
+    value: String,
+    contentDescription: String,
+    topStart: Dp = 0.dp,
+    topEnd: Dp = 0.dp,
+    bottomStart: Dp = 0.dp,
+    bottomEnd: Dp = 0.dp,
+){
+    ElevatedCard(modifier = Modifier.fillMaxWidth().height(75.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 5.dp),
+
+        shape = RoundedCornerShape(
+            topStart = topStart, // Rounded corner
+            topEnd = topEnd,   // Rounded corner
+            bottomStart = bottomStart, // Square corner
+            bottomEnd = bottomEnd    // Square corner
+        )
+    ){
+        Row(
+            modifier = Modifier.fillMaxSize().padding(3.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                painter = painterResource(iconRes),
+                contentDescription = contentDescription,
+                tint = MaterialTheme.colorScheme.primary,
+            )
+
+            Text(text = message)
+            Text(text = value)
+
+        }
+    }
+}
 
 //Readiness explanation section composable
 @Composable
@@ -287,7 +277,7 @@ fun ReadinessExplanationSection(){
         modifier = Modifier.fillMaxWidth()
             .wrapContentHeight()
             .padding(3.dp)
-            , border = BorderStroke(width = 1.dp, color = Color.Gray)
+            , border = BorderStroke(width = 3.dp, color = Color.Gray)
     ) {
 
         Column(
@@ -337,5 +327,13 @@ fun ReadinessExplanationSection(){
 @Preview(showBackground = true)
 @Composable
 fun ReadinessScoreScreenPreview(){
-
+    ReadinessScoreScreen(navController = rememberNavController(),
+    viewModel  = viewModel(factory = ReadinessViewModelFactory(
+        repository = HealthRepositoryImplementation(
+            HealthConnectManager(LocalContext.current)
+        ),
+        healthConnectManager = HealthConnectManager(LocalContext.current)
+    )
+    )
+    )
 }

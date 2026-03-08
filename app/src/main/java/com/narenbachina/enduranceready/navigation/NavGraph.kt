@@ -47,10 +47,10 @@ fun NavGraph(navController: NavHostController,
             WorkoutMovementDetailsScreen()
         }
         composable(NavigationDestination.Profile.route){
-            ProfileScreen(viewModel(factory = ReadinessViewModelFactory(
-                container.healthRepository
-            )
-            ))
+            ProfileScreen(viewModel = viewModel(factory = ReadinessViewModelFactory(
+                container.healthRepository,
+                container.healthConnectManager
+            )),container.healthConnectManager )
         }
         /**
          * ViewModel is created here using Factory because it requires HealthRepository as a dependency.
@@ -61,9 +61,8 @@ fun NavGraph(navController: NavHostController,
          * This keeps architecture clean and scalable.
          */
         composable(NavigationDestination.ReadinessScoreDetails.route){
-            val viewModel: ReadinessViewModel = viewModel(factory = ReadinessViewModelFactory(
-                container.healthRepository
-            )
+            val viewModel: ReadinessViewModel = viewModel(factory = ReadinessViewModelFactory(container.healthRepository
+            ,container.healthConnectManager)
             )
             ReadinessScoreScreen(navController,viewModel)
         }

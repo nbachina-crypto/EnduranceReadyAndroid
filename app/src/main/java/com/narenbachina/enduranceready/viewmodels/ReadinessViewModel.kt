@@ -17,6 +17,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class ReadinessViewModel(private val repository: HealthRepository,
+    private val healthConnectManager: HealthConnectManager
 ): ViewModel() {
 
     /**
@@ -35,17 +36,26 @@ class ReadinessViewModel(private val repository: HealthRepository,
     private val _uiState = MutableStateFlow(ReadinessUiState())
     val uiState:StateFlow<ReadinessUiState> = _uiState.asStateFlow()
 
-    /**
-     * init block-It is Called when ViewModel is created.
-     *
-     * We immediately load health data so that:
-     * - UI shows loading first then real data appears.
-     * This avoids requiring the UI to manually trigger data loading.
-     */
+    private val _hasPermissions=MutableStateFlow(false)
+    val hasPermissions:StateFlow<Boolean> = _hasPermissions.asStateFlow()
 
-            init{
+    fun checkPermissionsAndLoad(){
+        viewModelScope.launch {
+            val granted=healthConnectManager.hasAllPermissions(
+                healthConnectManager.permissions
+            )
+
+            _hasPermissions.value=granted
+
+            if(granted){
                 loadData()
+            }else{
+                _uiState.value=ReadinessUiState(isLoading = false)
             }
+
+
+        }
+    }
 
     /**
      * loadData()-Fetches sleep and heart rate from repository.
@@ -62,18 +72,23 @@ class ReadinessViewModel(private val repository: HealthRepository,
         viewModelScope.launch  {
 
             try {
-
-
-                val weight=repository.getLatestWeight()
                 _uiState.value=ReadinessUiState(isLoading = true)
 
+                val weight=repository.getLatestWeight()
+                val height=repository.getLatestHeight()
                 val sleep=repository.getSleepHours()
-                val heartRate=repository.getRestingHeartRate()
+                val restingheartRate=repository.getRestingHeartRate()
+                val caloriesBurned=repository.getLatestCaloriesBurned()
+                val nutritionCalories=repository.getLatestNutritionCalories()
 
-                _uiState.value=ReadinessUiState(sleepHours = sleep,
-                    restingHeartRate = heartRate,
+                _uiState.value=ReadinessUiState(
+                    userWeight = weight,
+                    userHeight = height,
+                    sleepHours = sleep,
+                    restingHeartRate = restingheartRate,
+                    CaloriesBurned = caloriesBurned,
+                    NutritionCalories = nutritionCalories,
                     isLoading = false,
-                    userWeight = weight
                 )
 
 
@@ -100,10 +115,11 @@ class ReadinessViewModel(private val repository: HealthRepository,
  * - Replaceable (Fake → HealthConnect)
  */
 class ReadinessViewModelFactory(
-    private val repository: HealthRepository
+    private val repository: HealthRepository,
+    private val healthConnectManager: HealthConnectManager
 ): ViewModelProvider.Factory{
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        return ReadinessViewModel(repository) as T
+        return ReadinessViewModel(repository,healthConnectManager) as T
     }
 }
 
