@@ -54,8 +54,21 @@ fun ReadinessScoreScreen(navController: NavController,
                          viewModel: ReadinessViewModel
 ){
 val readinessUiState by viewModel.uiState.collectAsState()
+
     val sleepValue=readinessUiState.sleepHours?.let {
         String.format("%.1f hrs",it)
+    }?:"--"
+
+    val nutritionValue=readinessUiState.NutritionCalories?.let{
+        String.format("%.1f kcal",it)
+    }?:"--"
+
+    val restingHeartRate=readinessUiState.restingHeartRate?.let{
+        String.format("%f bpm",it)
+    }?:"--"
+
+    val movementValue=readinessUiState.CaloriesBurned?.let{
+        String.format("%.1f kcal",it)
     }?:"--"
 
     LazyColumn(
@@ -83,9 +96,9 @@ val readinessUiState by viewModel.uiState.collectAsState()
         item {
             DetailedReportReadinesScore(
                 sleepValue=sleepValue,
-                nutritionValue=2000.toString(),
-                heartRateValue=2000.toString(),
-                movementValue=2000.toString(),
+                nutritionValue=nutritionValue,
+                heartRateValue=restingHeartRate,
+                movementValue=movementValue,
 
             )
 

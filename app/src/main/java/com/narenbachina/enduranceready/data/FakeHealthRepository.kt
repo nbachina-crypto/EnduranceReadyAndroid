@@ -16,4 +16,16 @@ class FakeHealthRepository(): HealthRepository{
     override suspend fun getLatestWeight(): Double? {
         TODO("Not yet implemented")
     }
+
+    override suspend fun getLatestHeight(): Double? {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun getLatestNutritionCalories(): Double? {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun getLatestCaloriesBurned(): Double? {
+        TODO("Not yet implemented")
+    }
 }
